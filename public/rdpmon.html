@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+      background: black;
+      color: #22c55e;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      color: #06b6d4;
+      font-size: 36px;
+      margin-bottom: 16px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    input {
+      background: #111827;
+      border: 1px solid #06b6d4;
+      border-radius: 4px;
+      padding: 8px 16px;
+      color: white;
+      width: 256px;
+    }
+
+    .btn {
+      padding: 8px 24px;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-start {
+      background: #16a34a;
+    }
+    
+    .btn-start:hover {
+      background: #15803d;
+    }
+
+    .btn-stop {
+      background: #dc2626;
+    }
+
+    .btn-stop:hover {
+      background: #b91c1c;
+    }
+
+    .btn-blue {
+      background: #2563eb;
+    }
+
+    .btn-blue:hover {
+      background: #1d4ed8;
+    }
+
+    .function-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #06b6d4;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .card h2 {
+      color: #22d3ee;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .col-3 {
+      grid-column: span 3;
+    }
+
+    .col-4 {
+      grid-column: span 4;
+    }
+
+    .col-6 {
+      grid-column: span 6;
+    }
+
+    .col-8 {
+      grid-column: span 8;
+    }
+
+    .col-12 {
+      grid-column: span 12;
+    }
+
+    .threat-level {
+      font-size: 36px;
+      font-weight: bold;
+    }
+
+    .threat-low {
+      color: #00ff00;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .stats-item {
+      background: #1f2937;
+      padding: 12px;
+      border-radius: 4px;
+    }
+
+    .terminal {
+      height: 384px;
+      font-family: monospace;
+      font-size: 14px;
+      background: black;
+      padding: 8px;
+      border-radius: 4px;
+      overflow-y: auto;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .terminal-icon {
+      color: #06b6d4;
+    }
+
+    .alert {
+      background: #1f2937;
+      border: 1px solid #ef4444;
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .alert-title {
+      color: #ef4444;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .alert-content {
+      color: #22d3ee;
+    }
+
+    #attackChart {
+      width: 100%;
+      height: 256px;
+      background: #1f2937;
+      border-radius: 4px;
+      margin-top: 16px;
+      position: relative;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      display: none;
+    }
+
+    .axis-line {
+      stroke: #333;
+      stroke-width: 1;
+    }
+
+    .data-line {
+      stroke: #00ff00;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .axis-text {
+      fill: #00ffff;
+      font-size: 12px;
+    }
+
+    .grid-line {
+      stroke: #333;
+      stroke-dasharray: 4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>RDP Security Operations Center</h1>
+      <div class="controls">
+        <input type="text" value="C:/SecurityLogs" id="logPath">
+        <input type="text" placeholder="Enter API Key" id="apiKey">
+        <button class="btn btn-start" id="monitorBtn">Start Monitoring</button>
+      </div>
+      
+      <div class="function-buttons">
+        <button class="btn btn-blue">Help [F1]</button>
+        <button class="btn btn-blue">Threats [F2]</button>
+        <button class="btn btn-blue">Statistics [F3]</button>
+        <button class="btn btn-blue">Export [F4]</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card col-3">
+        <h2>Threat Level</h2>
+        <div class="threat-level threat-low" id="threatLevel">Low</div>
+      </div>
+
+      <div class="card col-3">
+        <h2>Statistics</h2>
+        <div id="statsDisplay">
+          <div>Total Attempts: 0</div>
+          <div>Unique IPs: 0</div>
+          <div>Unique Usernames: 0</div>
+        </div>
+      </div>
+
+      <div class="card col-6">
+        <h2>Attack Patterns</h2>
+        <div class="stats-grid">
+          <div class="stats-item">Brute Force: 0</div>
+          <div class="stats-item">Password Spray: 0</div>
+          <div class="stats-item">Outside Hours: 0</div>
+          <div class="stats-item">High Privilege: 0</div>
+        </div>
+      </div>
+
+      <div class="card col-8">
+        <h2>Attack Timeline</h2>
+        <div id="attackChart">
+          <div class="chart-tooltip"></div>
+        </div>
+      </div>
+
+      <div class="card col-4">
+        <div class="terminal-header">
+          <span class="terminal-icon">⌨</span>
+          <h2>Security Terminal</h2>
+        </div>
+        <div class="terminal" id="terminal"></div>
+      </div>
+
+      <div class="card col-12">
+        <h2>Active Threats</h2>
+        <div id="activeThreats">
+          <!-- Threats will be dynamically added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchLogs() {
+    try {
+        const response = await fetch('/api/logs');
+        const logs = await response.json();
+        displayLogs(logs);
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+    }
+}
+
+function startMonitoring() {
+    if (!isMonitoring) return;
+    fetchLogs();
+    setTimeout(startMonitoring, 2000); // Poll every 2 seconds
+}
+
+function displayLogs(logs) {
+    const terminal = document.getElementById('terminal');
+    terminal.innerHTML = '';  // Clear previous logs
+
+    logs.forEach(log => {
+        const logEntry = document.createElement('div');
+        logEntry.textContent = `[${log.TimeCreated}] ${log.Message}`;
+        terminal.appendChild(logEntry);
+    });
+}
+
+monitorBtn.addEventListener('click', () => {
+    isMonitoring = !isMonitoring;
+    monitorBtn.textContent = isMonitoring ? 'Stop Monitoring' : 'Start Monitoring';
+    monitorBtn.className = isMonitoring ? 'btn btn-stop' : 'btn btn-start';
+    if (isMonitoring) startMonitoring();
+});
+
+</script>
+</body>
+</html>
